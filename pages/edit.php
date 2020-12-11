@@ -14,20 +14,29 @@
 # You should have received a copy of the GNU General Public License
 # along with MantisBT.  If not, see <http://www.gnu.org/licenses/>.
 
-form_security_validate( 'plugin_forcemonitor_config_edit' );
+form_security_validate( 'plugin_contributors_edit' );
 
 auth_reauthenticate( );
 access_ensure_global_level( config_get( 'manage_plugin_threshold' ) );
 
-require_once( dirname(__FILE__).'/../core/forcemonitor_api.php' );
+require_once( dirname(__FILE__).'/../core/contributors_api.php' );
+require_api( 'database_api.php' );
+require_api( 'gpc_ap.php' );
 
-$t_monitors_old = list2str(str2list(plugin_config_get( 'users_always_monitor', '' )));
-$f_monitors = list2str(str2list(gpc_get_string( 'users_always_monitor', '' )));
-if( $t_monitors_old != $f_monitors ) {
-	plugin_config_set( 'users_always_monitor', list2str(str2list($f_monitors)) );
+$f_bug_id = gpc_get_int( 'bug_id' );
+$f_users = gpc_get_int_array( 'contributor' );
+$f_amounts = gpc_get_string_array( 'amount' );
+
+foreach ( $t_users as $i = > $t_user_id) {
+    contributor_set( $p_bug_id, $t_user_id, $t_amounts[$i] );
+}
+$f_new_user_id = gpc_get_int( 'new_user_id' );
+$f_new_amount = gpc_get_float( 'new_amount' );
+if ( $f_new_user_id != 0 && $f_new_amount != 0 ) {
+    contributor_set( $p_bug_id, $f_new_user_id, $f_new_amount );
 }
 
-form_security_purge( 'plugin_forcemonitor_config_edit' );
+form_security_purge( 'plugin_contributors_edit' );
 
-print_successful_redirect( plugin_page( 'config', true ) );
+print_successful_redirect( plugin_page( 'contributors', true ) );
 ?>

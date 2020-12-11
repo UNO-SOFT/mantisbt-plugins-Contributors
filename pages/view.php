@@ -23,21 +23,26 @@ layout_page_begin( 'manage_overview_page.php' );
 
 print_manage_menu( 'manage_plugin_page.php' );
 
-require_once( dirname(__FILE__).'/../core/forcemonitor_api.php' );
+require_once( dirname(__FILE__).'/../core/contributors_api.php' );
+
+$f_bug_id = gpc_get_int( 'bug_id' );
+$t_arr = contributors_get_array( $f_bug_id );
+$t_developers = contributors_list_users();
 ?>
+
 
 <div class="col-md-12 col-xs-12">
 <div class="space-10"></div>
 <div class="form-container" >
 
-<form id="formatting-config-form" action="<?php echo plugin_page( 'config_edit' )?>" method="post">
-<?php echo form_security_field( 'plugin_forcemonitor_config_edit' ) ?>
+<form id="formatting-config-form" action="<?php echo plugin_page( 'edit' )?>" method="post">
+<?php echo form_security_field( 'plugin_contributors_edit' ) ?>
 
 <div class="widget-box widget-color-blue2">
 <div class="widget-header widget-header-small">
 	<h4 class="widget-title lighter">
 		<i class="ace-icon fa fa-video-camera"></i>
-		<?php echo plugin_lang_get( 'config' )?>
+		<?php echo plugin_lang_get( 'show' )?>
 	</h4>
 </div>
 <div class="widget-body">
@@ -46,21 +51,38 @@ require_once( dirname(__FILE__).'/../core/forcemonitor_api.php' );
 <table class="table table-bordered table-condensed table-striped">
 <tr>
 	<th class="category width-40">
-		<?php echo plugin_lang_get( 'users_always_monitor' )?>
+		<?php echo plugin_lang_get( 'contributor' )?>
 	</th>
-<?php
-	$t_monitors_s = list2str(str2list(plugin_config_get( 'users_always_monitor', '' )));
-?>
+	<th class="category">
+		<?php echo plugin_lang_get( 'amount' )?>
+	</th>
+</tr>
+<?php foreach( $t_arr as $t_elt ) { ?>
+    <td>
+        <?php echo user_get_name( $t_elt[0] ); ?>
+        <input type="hidden" name="user" value="<?php echo $t_elt[0]; ?>" />
+    </td>
 	<td class="center" width="20%">
-		<input type="text" class="ace" name="users_always_monitor" value="<?php echo $t_monitors_s; ?>" />
+		<input type="text" class="ace" name="amount" value="<?php echo ($t_elt[1] / 100.0); ?>" />
 	</td>
+</tr>
+<?php } ?>
+<tr>
+    <td>
+        <select name="new_user" id="new_user">
+        <?php foreach( $t_developers as $t_developer ) {?>
+            <option value="$t_developer"><?php echo user_get_name( $t_developer ); ?></option>
+        <?php } ?>
+        </select>
+    </td>
+    <td><input type="text" name="new_amount" /></td>
 </tr>
 
 </table>
 </div>
 </div>
 <div class="widget-toolbox padding-8 clearfix">
-	<input type="submit" class="btn btn-primary btn-white btn-round" value="<?php echo lang_get( 'change_configuration' )?>" />
+	<input type="submit" class="btn btn-primary btn-white btn-round" value="<?php echo lang_get( 'submit' )?>" />
 </div>
 </div>
 </div>

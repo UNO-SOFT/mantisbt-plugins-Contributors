@@ -1,3 +1,7 @@
 <?php
+$s_plugin_Contributors_amount = 'Amount';
+$s_plugin_Contributors_contributor = 'Contributor';
 $s_plugin_Contributors_name = 'Contributors';
-$s_plugin_Contributors_config = 'Contributors configuration';
+$s_plugin_Contributors_edit = 'Edit contributors';
+$s_plugin_Contributors_view = 'View contributors';
+$s_plugin_Contributors_submit = 'Submit';
