@@ -52,8 +52,8 @@ class ContributorsPlugin extends MantisPlugin {
 		}
 		$f_bug_id = $p_params[0];
 		$t_arr = contributors_get_array( $f_bug_id );
-		echo "<table>";
-		echo "<tr><td><th>Contributor</th></td><td><th>Amount</th></td></tr>";
+		echo '<table>';
+		echo '<tr><td><th>' . plugin_lang_get( 'contributor ' ) . '</th></td><td><th>' . plugin_lang_get( 'hundred_cents' ) . '</th></td></tr>';
 		forearch( $t_arr as $t_elt ) {
 			echo "<tr><td>" . user_get_name($t_elt[0]) . "</td><td>" . ($t_elt[1] / 100.0) . "</td></tr>";
 		}
@@ -70,7 +70,7 @@ class ContributorsPlugin extends MantisPlugin {
 			array( 'CreateTableSQL', array( plugin_table( 'contribution' ), "
 				bug_id		I	NOTNULL UNSIGNED PRIMARY,
 				user_id		I	NOTNULL UNSIGNED,
-				amount		I	NOTNULL UNSIGNED",
+				cents		I	NOTNULL UNSIGNED",
 				$opts)
 			),
 			array( 'CreateIndexSQL', array( 'idx_contributors_bugid', plugin_table( 'contribution' ), 'bug_id' ) ),
@@ -81,7 +81,7 @@ class ContributorsPlugin extends MantisPlugin {
 				modified_at	T	NOTNULL DEFAULT '" . db_null_date() . "'
 				bug_id		I	NOTNULL UNSIGNED,
 				user_id		I	NOTNULL UNSIGNED,
-				amount		I	NOTNULL UNSIGNED",
+				cents		I	NOTNULL UNSIGNED",
 				$opts)
 			),
 		);

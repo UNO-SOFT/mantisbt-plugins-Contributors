@@ -54,7 +54,7 @@ $t_developers = contributors_list_users();
 		<?php echo plugin_lang_get( 'contributor' )?>
 	</th>
 	<th class="category">
-		<?php echo plugin_lang_get( 'amount' )?>
+		<?php echo plugin_lang_get( 'hundred_cents' )?>
 	</th>
 </tr>
 <?php foreach( $t_arr as $t_elt ) { ?>
@@ -63,7 +63,7 @@ $t_developers = contributors_list_users();
         <input type="hidden" name="user" value="<?php echo $t_elt[0]; ?>" />
     </td>
 	<td class="center" width="20%">
-		<input type="text" class="ace" name="amount" value="<?php echo ($t_elt[1] / 100.0); ?>" />
+		<input type="number" class="ace" name="hundred_cents" min="0" max="1000" step="0.01" value="<?php echo ($t_elt[1] / 100.0); ?>" />
 	</td>
 </tr>
 <?php } ?>
@@ -75,7 +75,7 @@ $t_developers = contributors_list_users();
         <?php } ?>
         </select>
     </td>
-    <td><input type="text" name="new_amount" /></td>
+    <td><input type="number" name="new_hundred_cents" min="0" max="1000" step="0.01" /></td>
 </tr>
 
 </table>

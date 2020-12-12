@@ -25,15 +25,15 @@ require_api( 'gpc_ap.php' );
 
 $f_bug_id = gpc_get_int( 'bug_id' );
 $f_users = gpc_get_int_array( 'contributor' );
-$f_amounts = gpc_get_string_array( 'amount' );
+$f_hundred_cents = gpc_get_float_array( 'hundred_cents' );
 
 foreach ( $t_users as $i = > $t_user_id) {
-    contributor_set( $p_bug_id, $t_user_id, $t_amounts[$i] );
+    contributor_set( $p_bug_id, $t_user_id, (int)($t_hundred_cents[$i] * 100) );
 }
 $f_new_user_id = gpc_get_int( 'new_user_id' );
-$f_new_amount = gpc_get_float( 'new_amount' );
-if ( $f_new_user_id != 0 && $f_new_amount != 0 ) {
-    contributor_set( $p_bug_id, $f_new_user_id, $f_new_amount );
+$f_new_cents = (int)(gpc_get_float( 'new_hundred_cents' ) * 100);
+if ( $f_new_user_id != 0 && $f_new_cents > 0 ) {
+    contributor_set( $p_bug_id, $f_new_user_id, $f_new_cents );
 }
 
 form_security_purge( 'plugin_contributors_edit' );

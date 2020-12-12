@@ -1,5 +1,5 @@
 <?php
-$s_plugin_Contributors_amount = 'Összeg';
+$s_plugin_Contributors_hundred_cents = 'Embernap';
 $s_plugin_Contributors_contributor = 'Hozzájáruló';
 $s_plugin_Contributors_name = 'Contributors';
 $s_plugin_Contributors_edit = 'Hozzájárulók szerkesztése';
