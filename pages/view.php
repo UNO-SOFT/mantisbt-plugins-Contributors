@@ -24,10 +24,11 @@ layout_page_begin( 'manage_overview_page.php' );
 print_manage_menu( 'manage_plugin_page.php' );
 
 require_once( dirname(__FILE__).'/../core/contributors_api.php' );
+require_api( 'logging_api.php' );
 
 $f_bug_id = gpc_get_int( 'bug_id' );
 $t_arr = contributors_get_array( $f_bug_id );
-$t_developers = contributors_list_users();
+$t_developers = contributors_list_users( DEVELOPER, $f_bug_id );
 ?>
 
 
@@ -35,7 +36,8 @@ $t_developers = contributors_list_users();
 <div class="space-10"></div>
 <div class="form-container" >
 
-<form id="formatting-config-form" action="<?php echo plugin_page( 'edit' )?>" method="post">
+<form id="formatting-config-form" action="<?php echo plugin_page( 'edit' ); ?>" method="post">
+	<input type="hidden" name="bug_id" id="bug_id" value="<?php echo $f_bug_id; ?>" />
 <?php echo form_security_field( 'plugin_contributors_edit' ) ?>
 
 <div class="widget-box widget-color-blue2">
@@ -60,10 +62,10 @@ $t_developers = contributors_list_users();
 <?php foreach( $t_arr as $t_elt ) { ?>
     <td>
         <?php echo user_get_name( $t_elt[0] ); ?>
-        <input type="hidden" name="user" value="<?php echo $t_elt[0]; ?>" />
+        <input type="hidden" name="user[]" value="<?php echo $t_elt[0]; ?>" />
     </td>
 	<td class="center" width="20%">
-		<input type="number" class="ace" name="hundred_cents" min="0" max="1000" step="0.01" value="<?php echo ($t_elt[1] / 100.0); ?>" />
+		<input type="number" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="<?php echo ($t_elt[1] / 100.0); ?>" />
 	</td>
 </tr>
 <?php } ?>
@@ -71,18 +73,18 @@ $t_developers = contributors_list_users();
     <td>
         <select name="new_user" id="new_user">
         <?php foreach( $t_developers as $t_developer ) {?>
-            <option value="$t_developer"><?php echo user_get_name( $t_developer ); ?></option>
+            <option value="<?php echo $t_developer; ?>"><?php echo user_get_name( $t_developer ); ?></option>
         <?php } ?>
         </select>
     </td>
-    <td><input type="number" name="new_hundred_cents" min="0" max="1000" step="0.01" /></td>
+    <td><input type="number" name="new_hundred_cents" min="0" max="1000" step="0.1" /></td>
 </tr>
 
 </table>
 </div>
 </div>
 <div class="widget-toolbox padding-8 clearfix">
-	<input type="submit" class="btn btn-primary btn-white btn-round" value="<?php echo lang_get( 'submit' )?>" />
+	<input type="submit" class="btn btn-primary btn-white btn-round"><?php echo lang_get( 'submit' )?></input>
 </div>
 </div>
 </div>

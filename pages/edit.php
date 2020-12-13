@@ -21,22 +21,24 @@ access_ensure_global_level( config_get( 'manage_plugin_threshold' ) );
 
 require_once( dirname(__FILE__).'/../core/contributors_api.php' );
 require_api( 'database_api.php' );
-require_api( 'gpc_ap.php' );
+require_api( 'gpc_api.php' );
+require_api( 'logging_api.php' );
 
 $f_bug_id = gpc_get_int( 'bug_id' );
-$f_users = gpc_get_int_array( 'contributor' );
-$f_hundred_cents = gpc_get_float_array( 'hundred_cents' );
+$f_users = gpc_get_int_array( 'user', array() );
+$f_hundred_cents = gpc_get_string_array( 'hundred_cents', array() );
 
-foreach ( $t_users as $i = > $t_user_id) {
-    contributor_set( $p_bug_id, $t_user_id, (int)($t_hundred_cents[$i] * 100) );
+log_event( LOG_PLUGIN, "users=" . var_export( $f_users, TRUE ) . " cents=" . var_export( $f_hundred_cents, TRUE ) );
+foreach ( $f_users as $i => $t_user_id) {
+	contributors_set( $f_bug_id, $t_user_id, (int)((float)($f_hundred_cents[$i]) * 100) );
 }
-$f_new_user_id = gpc_get_int( 'new_user_id' );
-$f_new_cents = (int)(gpc_get_float( 'new_hundred_cents' ) * 100);
+$f_new_user_id = gpc_get_int( 'new_user' );
+$f_new_cents = (int)((float)(gpc_get_string( 'new_hundred_cents' )) * 100);
+log_event( LOG_PLUGIN, "new_user=" . var_export( $f_new_user_id, TRUE ) . " new_cents=" . var_export( $f_new_ceents, TRUE ) );
 if ( $f_new_user_id != 0 && $f_new_cents > 0 ) {
-    contributor_set( $p_bug_id, $f_new_user_id, $f_new_cents );
+    contributors_set( $f_bug_id, $f_new_user_id, $f_new_cents );
 }
 
 form_security_purge( 'plugin_contributors_edit' );
 
-print_successful_redirect( plugin_page( 'contributors', true ) );
-?>
+print_successful_redirect( plugin_page( 'view', true ) . '&bug_id=' . $f_bug_id );

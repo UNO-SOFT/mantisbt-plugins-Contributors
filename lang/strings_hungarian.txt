@@ -1,6 +1,7 @@
 <?php
 $s_plugin_Contributors_hundred_cents = 'Embernap';
 $s_plugin_Contributors_contributor = 'Hozzájáruló';
+$s_plugin_Contributors_contribution = 'Hozzájárulás';
 $s_plugin_Contributors_name = 'Contributors';
 $s_plugin_Contributors_edit = 'Hozzájárulók szerkesztése';
 $s_plugin_Contributors_view = 'Hozzájárulók mutatása';

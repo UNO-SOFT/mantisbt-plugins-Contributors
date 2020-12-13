@@ -1,8 +1,12 @@
 <?php
 # :vim set noet:
 
-define(MANTIS_DIR, dirname(__FILE__) . '/../..' );
-define(MANTIS_CORE, MANTIS_DIR . '/core' );
+if ( !defined( MANTIS_DIR ) ) {
+	define(MANTIS_DIR, dirname(__FILE__) . '/../..' );
+}
+if ( !defined( MANTIS_CODE ) ) {
+	define(MANTIS_CORE, MANTIS_DIR . '/core' );
+}
 
 require_once( MANTIS_DIR . '/core.php' );
 require_once( config_get( 'class_path' ) . 'MantisPlugin.class.php' );
@@ -15,11 +19,11 @@ class ContributorsPlugin extends MantisPlugin {
 	function register() {
 		$this->name = 'Contributors';	# Proper name of plugin
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
-		$this->page = 'view';		   # Default plugin page
+		$this->page = '';		   # Default plugin page
 
-		$this->version = '0.1';	 # Plugin version string
+		$this->version = '0.2';	 # Plugin version string
 		$this->requires = array(	# Plugin dependencies, array of basename => version pairs
-			'MantisCore' => '2.0.0',
+			'MantisCore' => '2.0.0'
 			);
 
 		$this->author = 'Tamás Gulácsi';		 # Author/team name
@@ -42,22 +46,39 @@ class ContributorsPlugin extends MantisPlugin {
 		if ( access_get_project_level() < MANAGER ) {
 			return array();
 		}
-		return array( '<a href="' . plugin_page( 'view.php' ) . '?bug_id=' . $p_bug_id . '">'
+		return array( '<a class="btn btn-primary btn-sm btn-white btn-round" href="' . plugin_page( 'view.php' ) . '&bug_id=' . $p_bug_id . '">'
 			.  plugin_lang_get('view') . '</a>', );
 	}
 
-	function view_bug_extra($p_event, $p_params) {
-		if ( access_get_project_level() >= MANAGER ) {
+	function view_bug_extra($p_event, $p_bug_id) {
+		if ( access_get_project_level() < MANAGER ) {
 			return;
 		}
-		$f_bug_id = $p_params[0];
-		$t_arr = contributors_get_array( $f_bug_id );
-		echo '<table>';
-		echo '<tr><td><th>' . plugin_lang_get( 'contributor ' ) . '</th></td><td><th>' . plugin_lang_get( 'hundred_cents' ) . '</th></td></tr>';
-		forearch( $t_arr as $t_elt ) {
-			echo "<tr><td>" . user_get_name($t_elt[0]) . "</td><td>" . ($t_elt[1] / 100.0) . "</td></tr>";
+		$t_arr = contributors_get_array( $p_bug_id );
+		log_event( LOG_PLUGIN, "bug_id=$p_bug_id contributors=" . var_export( $t_arr, TRUE ) );
+
+		echo '
+<div class="col-md-12 col-xs-12 noprint">
+	<div id="contributors" class="widget-box widget-color-blue2">
+		<div class="widget-header widget-header-small">
+			<h4 class="widget-title lighter">' . plugin_lang_get( 'contribution' ) . '</h4>
+		</div>
+	<div class="widget-body">
+		<table class="table table-bordered table-condensed table-hover table-striped">
+			<thead><tr><th>' . plugin_lang_get( 'contributor' ) . '</th><th>' . plugin_lang_get( 'hundred_cents' ) . '</th></tr></thead>
+			<tbody>
+';
+		foreach( $t_arr as $t_elt ) {
+			echo "<tr><td>" . user_get_name($t_elt[0]) . "</td><td>" . ($t_elt[1] / 100.0) . "</td></tr>\n";
 		}
-		echo "</table>";
+		echo '
+			</tbody>
+		</table>
+	</div>
+	<div class="widget-toolbox padding-8 clearfix">
+		<a class="btn btn-primary btn-sm btn-white btn-round" href="' . plugin_page( 'view.php' ) . '&bug_id=' . $p_bug_id . '">' . plugin_lang_get('view') . '</a>
+	</div>
+</div>';
 	}
 
 
@@ -67,18 +88,18 @@ class ContributorsPlugin extends MantisPlugin {
 			'pgsql' => 'WITHOUT OIDS'
 		);
 		return array(
-			array( 'CreateTableSQL', array( plugin_table( 'contribution' ), "
-				bug_id		I	NOTNULL UNSIGNED PRIMARY,
+			array( 'CreateTableSQL', array( plugin_table( 'current' ), "
+				bug_id		I	NOTNULL UNSIGNED,
 				user_id		I	NOTNULL UNSIGNED,
 				cents		I	NOTNULL UNSIGNED",
 				$opts)
 			),
-			array( 'CreateIndexSQL', array( 'idx_contributors_bugid', plugin_table( 'contribution' ), 'bug_id' ) ),
+			array( 'CreateIndexSQL', array( 'idx_contributors_bugid', plugin_table( 'current' ), 'bug_id' ) ),
 
-			array( 'CreateTableSQL', array( plugin_table( 'contribution_history' ) . '_history', "
-				id			I	NOTNULL UNSIGNED PRIMARY AUTOINCREMENT
+			array( 'CreateTableSQL', array( plugin_table( 'history' ) , "
+				id			I	NOTNULL UNSIGNED PRIMARY AUTOINCREMENT,
 				modifier_id	I	NOTNULL UNSIGNED,
-				modified_at	T	NOTNULL DEFAULT '" . db_null_date() . "'
+				modified_at	I	NOTNULL DEFAULT 0,
 				bug_id		I	NOTNULL UNSIGNED,
 				user_id		I	NOTNULL UNSIGNED,
 				cents		I	NOTNULL UNSIGNED",
