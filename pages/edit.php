@@ -14,15 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with MantisBT.  If not, see <http://www.gnu.org/licenses/>.
 
-form_security_validate( 'plugin_contributors_edit' );
-
-auth_reauthenticate( );
-access_ensure_global_level( config_get( 'manage_plugin_threshold' ) );
-
 require_once( dirname(__FILE__).'/../core/contributors_api.php' );
 require_api( 'database_api.php' );
+require_api( 'form_api.php' );
 require_api( 'gpc_api.php' );
 require_api( 'logging_api.php' );
+
+form_security_validate( 'plugin_contributors_edit' );
+
+//auth_reauthenticate( );
+access_ensure_global_level( plugin_config_get( 'edit_threshold', MANAGER ) );
 
 $f_bug_id = gpc_get_int( 'bug_id' );
 $f_users = gpc_get_int_array( 'user', array() );
@@ -41,4 +42,4 @@ if ( $f_new_user_id != 0 && $f_new_cents > 0 ) {
 
 form_security_purge( 'plugin_contributors_edit' );
 
-print_successful_redirect( plugin_page( 'view', true ) . '&bug_id=' . $f_bug_id );
+print_successful_redirect( 'view.php?id=' . $f_bug_id . '#contributors' );
