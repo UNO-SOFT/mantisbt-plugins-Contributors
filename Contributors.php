@@ -21,7 +21,7 @@ class ContributorsPlugin extends MantisPlugin {
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
 		$this->page = '';		   # Default plugin page
 
-		$this->version = '0.3';	 # Plugin version string
+		$this->version = '0.3.1';	 # Plugin version string
 		$this->requires = array(	# Plugin dependencies, array of basename => version pairs
 			'MantisCore' => '2.0.0'
 			);
@@ -32,7 +32,10 @@ class ContributorsPlugin extends MantisPlugin {
 	}
 
 	function config() {
-		return array( 'view_threshold' => DEVELOPER, 'edit_threshold' => MANAGER );
+		return array( 
+			'view_threshold' => plugin_config_get( 'view_threshold', MANAGER ),
+			'edit_threshold' => plugin_config_get( 'edit_threshold', MANAGER )
+		);
 	}
 
 	function hooks() {
@@ -47,12 +50,12 @@ class ContributorsPlugin extends MantisPlugin {
 			return array();
 		}
 		return array( '<a class="btn btn-primary btn-sm btn-white btn-round" href="#contributors">'
-			.  plugin_lang_get('view') . '</a>', );
+			. plugin_lang_get('view') . '</a>', );
 	}
 
 	function view_bug_extra($p_event, $p_bug_id) {
 		$t_lvl = access_get_project_level();
-		if ( $t_lvl < plugin_config_get( 'view_threshold', DEVELOPER ) ) {
+		if ( $t_lvl < plugin_config_get( 'view_threshold', MANAGER ) ) {
 			return;
 		}
 		$t_page = 'view';
