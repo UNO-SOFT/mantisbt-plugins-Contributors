@@ -21,7 +21,7 @@ class ContributorsPlugin extends MantisPlugin {
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
 		$this->page = '';		   # Default plugin page
 
-		$this->version = '0.3.1';	 # Plugin version string
+		$this->version = '0.3.2';	 # Plugin version string
 		$this->requires = array(	# Plugin dependencies, array of basename => version pairs
 			'MantisCore' => '2.0.0'
 			);
@@ -33,8 +33,8 @@ class ContributorsPlugin extends MantisPlugin {
 
 	function config() {
 		return array( 
-			'view_threshold' => plugin_config_get( 'view_threshold', MANAGER ),
-			'edit_threshold' => plugin_config_get( 'edit_threshold', MANAGER )
+			'view_threshold' => plugin_config_get( 'view_threshold', DEVELOPER ),
+			'edit_threshold' => plugin_config_get( 'edit_threshold', DEVELOPER )
 		);
 	}
 
