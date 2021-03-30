@@ -21,7 +21,7 @@ class ContributorsPlugin extends MantisPlugin {
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
 		$this->page = '';		   # Default plugin page
 
-		$this->version = '0.3.2';	 # Plugin version string
+		$this->version = '0.3.3';	 # Plugin version string
 		$this->requires = array(	# Plugin dependencies, array of basename => version pairs
 			'MantisCore' => '2.0.0'
 			);
@@ -34,7 +34,8 @@ class ContributorsPlugin extends MantisPlugin {
 	function config() {
 		return array( 
 			'view_threshold' => plugin_config_get( 'view_threshold', DEVELOPER ),
-			'edit_threshold' => plugin_config_get( 'edit_threshold', DEVELOPER )
+			'edit_threshold' => plugin_config_get( 'edit_threshold', DEVELOPER ),
+			'contributor_threshold' => plugin_config_get( 'contributor_threshold', UPDATER )
 		);
 	}
 
@@ -86,7 +87,10 @@ class ContributorsPlugin extends MantisPlugin {
 				echo "<tr><td>" . user_get_name($t_elt[0]) . "</td><td>" . ($t_elt[1] / 100.0) . "</td></tr>\n";
 			}
 		} else {
-			$t_developers = contributors_list_users( DEVELOPER, $p_bug_id );
+			$t_contributors = contributors_list_users( 
+				plugin_config_get( 'contributor_threshold', DEVELOPER ), 
+				$p_bug_id 
+			);
 
 			foreach( $t_arr as $t_elt ) { 
 				echo '<tr><td>' . user_get_name( $t_elt[0] ) . '
@@ -101,8 +105,9 @@ class ContributorsPlugin extends MantisPlugin {
     <td>
 		<select name="new_user" id="new_user">
 ';
-			foreach( $t_developers as $t_developer ) {
-				echo '<option value="' . $t_developer . '">' . user_get_name( $t_developer ) . '</option>';
+			$t_contributors = array_diff( $t_contributors, $t_arr );
+			foreach( $t_contributors as $t_contributor ) {
+				echo '<option value="' . $t_contributor . '">' . user_get_name( $t_contributor ) . '</option>';
 			}
 			echo '
         </select>
