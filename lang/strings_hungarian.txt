@@ -1,8 +1,8 @@
 <?php
 $s_plugin_Contributors_hundred_cents = 'Embernap';
-$s_plugin_Contributors_contributor = 'Hozzájáruló';
-$s_plugin_Contributors_contribution = 'Hozzájárulás';
-$s_plugin_Contributors_name = 'Contributors';
-$s_plugin_Contributors_edit = 'Hozzájárulók szerkesztése';
-$s_plugin_Contributors_view = 'Hozzájárulók mutatása';
+$s_plugin_Contributors_contributor = 'Fejlesztő';
+$s_plugin_Contributors_contribution = 'Árajánlat';
+$s_plugin_Contributors_name = 'Fejlesztők';
+$s_plugin_Contributors_edit = 'Fejlesztők szerkesztése';
+$s_plugin_Contributors_view = 'Fejlesztők mutatása';
 $s_plugin_Contributors_submit = 'Mentés';
