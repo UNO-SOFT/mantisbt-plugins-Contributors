@@ -33,8 +33,8 @@ class ContributorsPlugin extends MantisPlugin {
 
 	function config() {
 		return array( 
-			'view_threshold' => plugin_config_get( 'view_threshold', DEVELOPER ),
-			'edit_threshold' => plugin_config_get( 'edit_threshold', DEVELOPER ),
+			'view_threshold' => plugin_config_get( 'view_threshold', UPDATER ),
+			'edit_threshold' => plugin_config_get( 'edit_threshold', UPDATER ),
 			'contributor_threshold' => plugin_config_get( 'contributor_threshold', UPDATER )
 		);
 	}
