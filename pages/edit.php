@@ -31,10 +31,10 @@ $f_hundred_cents = gpc_get_string_array( 'hundred_cents', array() );
 
 log_event( LOG_PLUGIN, "users=" . var_export( $f_users, TRUE ) . " cents=" . var_export( $f_hundred_cents, TRUE ) );
 foreach ( $f_users as $i => $t_user_id) {
-	contributors_set( $f_bug_id, $t_user_id, (int)((float)($f_hundred_cents[$i]) * 100) );
+	contributors_set( $f_bug_id, $t_user_id, string_mul_100($f_hundred_cents[$i]) );
 }
 $f_new_user_id = gpc_get_int( 'new_user' );
-$f_new_cents = (int)((float)(gpc_get_string( 'new_hundred_cents' )) * 100);
+$f_new_cents = string_mul_100(gpc_get_string( 'new_hundred_cents' ));
 log_event( LOG_PLUGIN, "new_user=" . var_export( $f_new_user_id, TRUE ) . " new_cents=" . var_export( $f_new_ceents, TRUE ) );
 if ( $f_new_user_id != 0 && $f_new_cents > 0 ) {
     contributors_set( $f_bug_id, $f_new_user_id, $f_new_cents );

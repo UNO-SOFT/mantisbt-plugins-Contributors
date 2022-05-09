@@ -15,6 +15,8 @@ require_once( dirname(__FILE__).'/core/contributors_api.php' );
 require_api( 'install_helper_functions_api.php' );
 require_api( 'authentication_api.php');
 
+test_string_mul_100();
+
 class ContributorsPlugin extends MantisPlugin {
 	function register() {
 		$this->name = 'Contributors';	# Proper name of plugin

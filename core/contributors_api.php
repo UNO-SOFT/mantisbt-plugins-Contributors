@@ -82,4 +82,32 @@ function contributors_list_users( $p_threshold = DEVELOPER, $p_bug_id = 0 ) {
 	return $t_arr;
 }
 
+function string_mul_100( string $p_num ): int {
+    $t_pos = strpos( $p_num, '.' );
+    if( $t_pos === false ) { 
+        return (int)($p_num . '00');
+    } elseif( $t_pos === 0 ) {
+        return (int)(substr( $p_num . '00', 1, 2 ));
+    } elseif( $t_pos === strlen( $p_num )-1 ) {
+        return (int)(substr( $p_num, 0, -1 ) . '00');
+    }
+    return (int)(substr( $p_num, 0, $t_pos ) . substr( $p_num . '00', $t_pos+1, 2 ));
+}
+
+function test_string_mul_100(): void {
+    foreach( array(
+        '1' => 100,
+        '1.0' => 100,
+        '0' => 0,
+        '0.12345' => 12,
+        '-34.56' => -3456,
+        '.30' => 30,
+    ) as $tIn => $tWant ) {
+        $tGot = string_mul_100($tIn);
+        if( $tGot != $tWant ) {
+            echo "!! $tIn: got $tGot, wanted $tWant";
+        }
+    }
+}
+
 // vim: set noet:
