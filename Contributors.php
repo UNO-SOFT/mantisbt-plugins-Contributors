@@ -1,10 +1,10 @@
 <?php
 # :vim set noet:
 
-if ( !defined( MANTIS_DIR ) ) {
+if ( !defined( 'MANTIS_DIR' ) ) {
 	define(MANTIS_DIR, dirname(__FILE__) . '/../..' );
 }
-if ( !defined( MANTIS_CORE ) ) {
+if ( !defined( 'MANTIS_CORE' ) ) {
 	define(MANTIS_CORE, MANTIS_DIR . '/core' );
 }
 
