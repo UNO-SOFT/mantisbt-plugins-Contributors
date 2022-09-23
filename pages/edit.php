@@ -28,16 +28,42 @@ access_ensure_global_level( plugin_config_get( 'edit_threshold', MANAGER ) );
 $f_bug_id = gpc_get_int( 'bug_id' );
 $f_users = gpc_get_int_array( 'user', array() );
 $f_hundred_cents = gpc_get_string_array( 'hundred_cents', array() );
+$f_deadline = gpc_get_string_array( 'deadline', array() );
+$f_validity = gpc_get_string_array( 'validity', array() );
+$f_description = gpc_get_string_array( 'description', array() );
 
-log_event( LOG_PLUGIN, "users=" . var_export( $f_users, TRUE ) . " cents=" . var_export( $f_hundred_cents, TRUE ) );
+log_event( LOG_PLUGIN, "users=" . var_export( $f_users, TRUE ) . 
+    " cents=" . var_export( $f_hundred_cents, TRUE ) .
+    " deadline=" . var_export( $f_deadline, TRUE ) .
+    " validity=" . var_export( $f_validity, TRUE ) .
+    " description=" . var_export( $f_description, TRUE ) 
+);
 foreach ( $f_users as $i => $t_user_id) {
-	contributors_set( $f_bug_id, $t_user_id, string_mul_100($f_hundred_cents[$i]) );
+    contributors_set( $f_bug_id, $t_user_id, array(
+        'cents' => string_mul_100($f_hundred_cents[$i]),
+        'deadline' => $f_deadline[$i], 
+        'validity' => $f_validity[$i],
+        'description' => $f_description[$i],
+    ));
 }
 $f_new_user_id = gpc_get_int( 'new_user' );
 $f_new_cents = string_mul_100(gpc_get_string( 'new_hundred_cents' ));
-log_event( LOG_PLUGIN, "new_user=" . var_export( $f_new_user_id, TRUE ) . " new_cents=" . var_export( $f_new_ceents, TRUE ) );
+$f_new_deadline = gpc_get_string( 'new_deadline' );
+$f_new_validity = gpc_get_string( 'new_validity' );
+$f_new_description = gpc_get_string( 'new_description' );
+log_event( LOG_PLUGIN, "new_user=" . var_export( $f_new_user_id, TRUE ) . 
+    " new_cents=" . var_export( $f_new_cents, TRUE ) .
+    " new_deadline=" . var_export( $f_new_deadline, TRUE ) . 
+    " new_validity=" . var_export( $f_new_validity, TRUE ) . 
+    " new_description=" . var_export( $f_new_description, TRUE ) 
+);
 if ( $f_new_user_id != 0 && $f_new_cents > 0 ) {
-    contributors_set( $f_bug_id, $f_new_user_id, $f_new_cents );
+    contributors_set( $f_bug_id, $f_new_user_id, array(
+        'cents' => $f_new_cents,
+        'deadline' => $f_new_deadline, 
+        'validity' => $f_new_validity, 
+        'description' => $f_new_description,
+    ));
 }
 
 form_security_purge( 'plugin_contributors_edit' );

@@ -1,5 +1,8 @@
 <?php
 $s_plugin_Contributors_hundred_cents = 'Embernap';
+$s_plugin_Contributors_deadline = 'Határidő';
+$s_plugin_Contributors_validity = 'Érvényesség';
+$s_plugin_Contributors_description = 'Leírás';
 $s_plugin_Contributors_contributor = 'Fejlesztő';
 $s_plugin_Contributors_contribution = 'Árajánlat';
 $s_plugin_Contributors_name = 'Fejlesztők';

@@ -1,49 +1,79 @@
 <?php
 require_api( 'authentication_api.php' );
 require_api( 'database_api.php' );
+require_api( 'date_api.php' );
 
-function contributors_set( $p_bug_id, $p_user_id, $p_cents ) {
+function contributors_set( $p_bug_id, $p_user_id, $p_row ) {
 	$t_old = contributors_get( $p_bug_id, $p_user_id );
-	if ( $t_old == $p_cents ) {
+log_event( LOG_LDAP, "old=" . var_export( $t_old, TRUE ) . 
+	" new=" . var_export( $p_row, TRUE ) .
+	" equal=" . var_export( $t_old == $p_row, TRUE )
+);
+	if ( $t_old == $p_row ) {
 		return;
 	}
 
+	$t_deadline = date_strtotime( $p_row['deadline'] );
+	$t_validity = date_strtotime( $p_row['validity'] );
+log_event( LOG_LDAP, "deadline=" . $t_deadline . ' validity=' . $t_validity );
 	$t_history_tbl = plugin_table( 'history' );
 	$t_history_query = 'INSERT INTO ' . $t_history_tbl . ' 
-		( modifier_id, modified_at, bug_id, user_id, cents )
-		VALUES ( ' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ')';
-	db_query( $t_history_query, array( auth_get_current_user_id(), db_now(), $p_bug_id, $p_user_id, $p_cents ) );
+		( modifier_id, modified_at, bug_id, user_id, 
+		  cents, deadline, validity, description )
+		VALUES ( ' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ',' . 
+			db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ')';
+	db_query( $t_history_query, array( 
+		auth_get_current_user_id(), db_now(), $p_bug_id, $p_user_id, 
+		$p_row['cents'], $t_deadline, $t_validity, $p_row['description']
+	) );
 
 	$t_tbl = plugin_table( 'current' );
-	if ( $p_cents == 0 ) {
+	if ( $p_row['cents'] == 0 ) {
 		$t_query = 'DELETE FROM ' . $t_tbl . ' WHERE bug_id = ' . db_param() . ' AND user_id = ' . db_param();
 		db_query( $t_query, array( $p_bug_id, $p_user_id ) );
 		return;
 	}
 
-	$t_query = 'UPDATE ' . $t_tbl . ' SET cents = ' . db_param() . ' WHERE bug_id = ' . db_param() .
-		' AND user_id = ' . db_param();
-	db_query( $t_query, array( $p_cents, $p_bug_id, $p_user_id ) );
+	$t_query = 'UPDATE ' . $t_tbl . 
+		' SET cents = ' . db_param() . 
+		', deadline = ' . db_param() . ', validity = ' . db_param() . ', description = ' . db_param() .
+		' WHERE bug_id = ' . db_param() . ' AND user_id = ' . db_param();
+	db_query( $t_query, array( 
+		$p_row['cents'], 
+		$t_deadline, $t_validity, $p_row['description'], 
+		$p_bug_id, $p_user_id
+	) );
 
 	if ( db_affected_rows() == 0 ) {
 		$t_query = 'INSERT INTO ' . $t_tbl . ' 
-			( bug_id, user_id, cents )
-			VALUES ( ' . db_param() . ',' . db_param() . ',' . db_param() . ')';
-		db_query( $t_query, array( $p_bug_id, $p_user_id, $p_cents ) );
+			( bug_id, user_id, cents, deadline, validity, description )
+			VALUES ( ' . db_param() . ',' . db_param() . ',' . db_param() .  ',' . 
+						db_param() .  ',' . db_param() . ',' . db_param() . ')';
+		db_query( $t_query, array( 
+			$p_bug_id, $p_user_id, $p_row['cents'], $t_deadline, $t_validity, $p_row['description'] 
+		) );
 	}
 }
 
 function contributors_get( $p_bug_id, $p_user_id ) {
-	$t_query = 'SELECT cents FROM ' . plugin_table( 'current' ) . 
+	$t_query = 'SELECT cents, deadline, validity, description FROM ' . plugin_table( 'current' ) . 
 		' WHERE bug_id = ' . db_param() . ' AND user_id = ' . db_param();
 	$t_result = db_query( $t_query, array( $p_bug_id, $p_user_id ) );
-	return (int)db_result( $t_result );
+	$t_row = db_fetch_array( $t_result );
+	if( !$t_row ) {
+		return $t_row;
+	};
+	$t_row['validity'] = date_timetostr( $t_row['validity'] );
+	$t_row['deadline'] = date_timetostr( $t_row['deadline'] );
+log_event( LOG_LDAP, "row=" . var_export( $t_row, TRUE ) );
+	return $t_row;
 }
 
 function contributors_get_array( $p_bug_id ) {
-	$t_query = 'SELECT user_id, cents FROM ' . plugin_table( 'current' ) . 
+	$t_query = 'SELECT user_id, cents, deadline, validity, description FROM ' . plugin_table( 'current' ) . 
 		' WHERE bug_id = ' . db_param();
 	$t_result = db_query( $t_query, array( $p_bug_id ) );
+
 	$t_arr = array();
 	if ( !$t_result ) {
 		return $t_arr;
@@ -53,7 +83,10 @@ function contributors_get_array( $p_bug_id ) {
 		if ( ! $t_row ) {
 			break;
 		}
-		$t_arr[] = array_values( $t_row );
+		$t_row['validity'] = date_timetostr( $t_row['validity'] );
+		$t_row['deadline'] = date_timetostr( $t_row['deadline'] );
+log_event( LOG_LDAP, "row=" . var_export( $t_row, TRUE ) );
+		$t_arr[] = $t_row;
 	}
 	return $t_arr;
 }
@@ -108,6 +141,13 @@ function test_string_mul_100(): void {
             echo "!! $tIn: got $tGot, wanted $tWant";
         }
     }
+}
+
+function date_timetostr( $p_date ) {
+	if( date_is_null( $p_date ) ) {
+		return '';
+	} 
+	return date( 'Y-m-d', $p_date );
 }
 
 // vim: set noet:

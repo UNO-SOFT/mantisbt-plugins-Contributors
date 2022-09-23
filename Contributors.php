@@ -14,6 +14,7 @@ require_once( dirname(__FILE__).'/core/contributors_api.php' );
 
 require_api( 'install_helper_functions_api.php' );
 require_api( 'authentication_api.php');
+require_api( 'string_api.php');
 
 test_string_mul_100();
 
@@ -23,7 +24,7 @@ class ContributorsPlugin extends MantisPlugin {
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
 		$this->page = '';		   # Default plugin page
 
-		$this->version = '0.3.4';	 # Plugin version string
+		$this->version = '0.4.0';	 # Plugin version string
 		$this->requires = array(	# Plugin dependencies, array of basename => version pairs
 			'MantisCore' => '2.0.0'
 			);
@@ -80,13 +81,21 @@ class ContributorsPlugin extends MantisPlugin {
 				</div>
 				<div class="widget-body">
 					<table class="table table-bordered table-condensed table-hover table-striped">
-						<thead><tr><th>' . plugin_lang_get( 'contributor' ) . '</th><th>' . plugin_lang_get( 'hundred_cents' ) . '</th></tr></thead>
+						<thead><tr>
+							<th>' . plugin_lang_get( 'contributor' ) . '</th><th>' . plugin_lang_get( 'hundred_cents' ) . '</th>
+							<th>' . plugin_lang_get( 'deadline' ) . '</th><th>' . plugin_lang_get( 'validity' ) . '</th>
+						</tr></thead>
 						<tbody>
 ';
 
 		if ( !$t_edit ) { // just view
 			foreach( $t_arr as $t_elt ) {
-				echo "<tr><td>" . user_get_name($t_elt[0]) . "</td><td>" . ($t_elt[1] / 100.0) . "</td></tr>\n";
+				echo "<tr><td>" . user_get_name( $t_elt['user_id'] ) . '</td>
+					<td>' . ($t_elt['cents'] / 100.0) . '</td>
+					<td>' . $t_elt['deadline'] . '</td>
+					<td>' . $t_elt['validity'] . '</td>
+					<td><p>' . string_display_links( $t_elt['description'] ) . '</p></td>
+					</tr>';
 			}
 		} else {
 			$t_contributors = contributors_list_users( 
@@ -95,12 +104,16 @@ class ContributorsPlugin extends MantisPlugin {
 			);
 
 			foreach( $t_arr as $t_elt ) { 
-				echo '<tr><td>' . user_get_name( $t_elt[0] ) . '
-					<input type="hidden" name="user[]" value="' . $t_elt[0] . '" />
+				echo '<tr><td>' . user_get_name( $t_elt['user_id'] ) . '
+					<input type="hidden" name="user[]" value="' . $t_elt['user_id'] . '" />
 				</td>
 				<td class="center" width="20%">
-					<input type="number" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt[1] / 100.0) . '" />
-				</td></tr>';
+					<input type="number" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt['cents'] / 100.0) . '" />
+				</td>
+				<td><input type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" style="" data-form-type="date" /></td>
+				<td><input type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" style="" data-form-type="date" /></td>
+				<td><textarea class="input-sm" name="description[]" data-form-type="text">' . string_display( $t_elt['description'] ) . '</textarea></td>
+				</tr>';
 			}
 			echo '
 <tr>
@@ -115,6 +128,9 @@ class ContributorsPlugin extends MantisPlugin {
         </select>
     </td>
     <td><input type="number" name="new_hundred_cents" min="0" max="1000" step="0.1" /></td>
+    <td><input type="date" id="new_deadline" class="datetimepicker input-sm" name="new_deadline" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
+    <td><input type="date" id="new_validity" class="datetimepicker input-sm" name="new_validity" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
+    <td><textarea id="new_description" class="input-sm" name="new_description" data-form-type="text"></textarea></td>
 </tr>
 ';
 		} 
@@ -165,6 +181,19 @@ class ContributorsPlugin extends MantisPlugin {
 				bug_id		I	NOTNULL UNSIGNED,
 				user_id		I	NOTNULL UNSIGNED,
 				cents		I	NOTNULL UNSIGNED",
+				$opts)
+			),
+
+			array( 'AddColumnSQL', array( plugin_table( 'current' ), "
+				description     X,
+				deadline		I UNSIGNED,
+				validity		I UNSIGNED",
+				$opts)
+			),
+			array( 'AddColumnSQL', array( plugin_table( 'history' ), "
+				description     X,
+				deadline		I UNSIGNED,
+				validity		I UNSIGNED",
 				$opts)
 			),
 		);

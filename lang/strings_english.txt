@@ -1,5 +1,9 @@
 <?php
 $s_plugin_Contributors_hundred_cents = 'Hundred cents';
+$s_plugin_Contributors_deadline = 'Deadline';
+$s_plugin_Contributors_validity = 'Validity';
+$s_plugin_Contributors_description = 'Description';
+$s_plugin_Contributors_deadline = 'Hundred cents';
 $s_plugin_Contributors_contributor = 'Contributor';
 $s_plugin_Contributors_contribution = 'Contribution';
 $s_plugin_Contributors_name = 'Contributors';
