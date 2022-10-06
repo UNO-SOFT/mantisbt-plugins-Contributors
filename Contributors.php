@@ -19,6 +19,8 @@ require_api( 'string_api.php');
 test_string_mul_100();
 
 class ContributorsPlugin extends MantisPlugin {
+	private $cfg = null;
+
 	function register() {
 		$this->name = 'Contributors';	# Proper name of plugin
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
@@ -32,14 +34,21 @@ class ContributorsPlugin extends MantisPlugin {
 		$this->author = 'Tamás Gulácsi';		 # Author/team name
 		$this->contact = 'T.Gulacsi@unosoft.hu';		# Author/team e-mail address
 		$this->url = 'http://www.unosoft.hu';			# Support webpage
+		
+		$this->cfg = array(
+			'view_threshold' => plugin_config_get( 'view_threshold', UPDATER ),
+			'edit_threshold' => plugin_config_get( 'edit_threshold', MANAGER ),
+			'contributor_threshold' => plugin_config_get( 'contributor_threshold', UPDATER ),
+		);
 	}
 
 	function config() {
-		return array( 
-			'view_threshold' => plugin_config_get( 'view_threshold', UPDATER ),
-			'edit_threshold' => plugin_config_get( 'edit_threshold', UPDATER ),
-			'contributor_threshold' => plugin_config_get( 'contributor_threshold', UPDATER )
-		);
+		return $this->cfg;
+	}
+
+	function config_get( $p_name ) {
+		$t_defaults = $this->config();
+		return plugin_config_get( $p_name, $t_defaults[$p_name] );
 	}
 
 	function hooks() {
@@ -50,23 +59,22 @@ class ContributorsPlugin extends MantisPlugin {
 	}
 
 	function menu_issue($p_event, $p_bug_id) {
-		if ( access_get_project_level() < plugin_config_get( 'view_threshold', MANAGER ) ) {
+		$t_threshold = $this->config_get( 'view_threshold' );
+		if ( access_get_project_level() < $t_threshold ) {
 			return array();
 		}
 		return array( '<a class="btn btn-primary btn-sm btn-white btn-round" href="#contributors">'
 			. plugin_lang_get('view') . '</a>', );
 	}
-
 	function view_bug_extra($p_event, $p_bug_id) {
 		$t_lvl = access_get_project_level();
-		$t_defaults = config();
-		$t_view_threshold = plugin_config_get( 'view_threshold', $t_defaults['view_threshold'] );
-		if ( $t_lvl <  ) {
+		$t_view_threshold = $this->config_get( 'view_threshold' );
+		if ( $t_lvl < $t_view_threshold ) {
 			return;
 		}
 		$t_page = 'view';
 		$t_current_uid = auth_get_current_user_id();
-		$t_edit = $t_lvl >= plugin_config_get( 'edit_threshold', $t_defaults['edit_threshold'] );
+		$t_edit = $t_lvl >= $this->config_get( 'edit_threshold' );
 		$t_arr = contributors_get_array( $p_bug_id );
 		if ( $t_edit ) {
 			$t_page = 'edit';
@@ -106,16 +114,13 @@ class ContributorsPlugin extends MantisPlugin {
 					</tr>';
 			}
 		} else {
-			$t_contributors = contributors_list_users( 
-				plugin_config_get( 'contributor_threshold', DEVELOPER ), 
-				$p_bug_id 
-			);
+			$t_contributors = contributors_list_users( $this->config_get( 'contributor_threshold' ), $p_bug_id );
 
 			foreach( $t_arr as $t_elt ) { 
 				$t_uid = $t_elt['user_id'];
 				$t_cents_type = 'hidden';
 				if( $t_uid == $t_current_uid || $t_lvl >= $t_edit_threshold ) {
-					$t_cents_type = 'number'
+					$t_cents_type = 'number';
 				}
 				echo '<tr><td>' . user_get_name( $t_uid ) . '
 					<input type="hidden" name="user[]" value="' . $t_uid . '" />
@@ -128,24 +133,26 @@ class ContributorsPlugin extends MantisPlugin {
 				<td><textarea class="input-sm" name="description[]" data-form-type="text">' . string_display( $t_elt['description'] ) . '</textarea></td>
 				</tr>';
 			}
-			echo '
+			if( count($t_contributors) > 0 ) {
+				echo '
 <tr>
-    <td>
+	<td>
 		<select name="new_user" id="new_user">
 ';
-			$t_contributors = array_diff( $t_contributors, $t_arr );
-			foreach( $t_contributors as $t_contributor ) {
-				echo '<option value="' . $t_contributor . '">' . user_get_name( $t_contributor ) . '</option>';
-			}
-			echo '
-        </select>
-    </td>
-    <td><input type="number" name="new_hundred_cents" min="0" max="1000" step="0.1" /></td>
-    <td><input type="date" id="new_deadline" class="datetimepicker input-sm" name="new_deadline" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
-    <td><input type="date" id="new_validity" class="datetimepicker input-sm" name="new_validity" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
-    <td><textarea id="new_description" class="input-sm" name="new_description" data-form-type="text"></textarea></td>
+				$t_contributors = array_diff( $t_contributors, $t_arr );
+				foreach( $t_contributors as $t_contributor ) {
+					echo '<option value="' . $t_contributor . '">' . user_get_name( $t_contributor ) . '</option>';
+				}
+				echo '
+		</select>
+	</td>
+	<td><input type="number" name="new_hundred_cents" min="0" max="1000" step="0.1" /></td>
+	<td><input type="date" id="new_deadline" class="datetimepicker input-sm" name="new_deadline" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
+	<td><input type="date" id="new_validity" class="datetimepicker input-sm" name="new_validity" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
+	<td><textarea id="new_description" class="input-sm" name="new_description" data-form-type="text"></textarea></td>
 </tr>
 ';
+				}
 		} 
 
 		echo '
@@ -172,7 +179,6 @@ class ContributorsPlugin extends MantisPlugin {
 
 	}
 
-
 	function schema() {
 		$opts = array(
 			'mysql' => 'DEFAULT CHARSET=utf8',
@@ -198,13 +204,13 @@ class ContributorsPlugin extends MantisPlugin {
 			),
 
 			array( 'AddColumnSQL', array( plugin_table( 'current' ), "
-				description     X,
+				description	 X,
 				deadline		I UNSIGNED,
 				validity		I UNSIGNED",
 				$opts)
 			),
 			array( 'AddColumnSQL', array( plugin_table( 'history' ), "
-				description     X,
+				description	 X,
 				deadline		I UNSIGNED,
 				validity		I UNSIGNED",
 				$opts)
