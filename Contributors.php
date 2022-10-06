@@ -59,11 +59,14 @@ class ContributorsPlugin extends MantisPlugin {
 
 	function view_bug_extra($p_event, $p_bug_id) {
 		$t_lvl = access_get_project_level();
-		if ( $t_lvl < plugin_config_get( 'view_threshold', MANAGER ) ) {
+		$t_defaults = config();
+		$t_view_threshold = plugin_config_get( 'view_threshold', $t_defaults['view_threshold'] );
+		if ( $t_lvl <  ) {
 			return;
 		}
 		$t_page = 'view';
-		$t_edit = $t_lvl >= plugin_config_get( 'edit_threshold', MANAGER );
+		$t_current_uid = auth_get_current_user_id();
+		$t_edit = $t_lvl >= plugin_config_get( 'edit_threshold', $t_defaults['edit_threshold'] );
 		$t_arr = contributors_get_array( $p_bug_id );
 		if ( $t_edit ) {
 			$t_page = 'edit';
@@ -90,8 +93,13 @@ class ContributorsPlugin extends MantisPlugin {
 
 		if ( !$t_edit ) { // just view
 			foreach( $t_arr as $t_elt ) {
-				echo "<tr><td>" . user_get_name( $t_elt['user_id'] ) . '</td>
-					<td>' . ($t_elt['cents'] / 100.0) . '</td>
+				$t_uid = $t_elt['user_id'];
+				$t_cents = '*';
+				if( $t_current_uid == $t_uid ) {
+					$t_cents = $t_elt['cents'] / 100.0;
+				}
+				echo "<tr><td>" . user_get_name( $t_uid ) . '</td>
+					<td>' . $t_cents . '</td>
 					<td>' . $t_elt['deadline'] . '</td>
 					<td>' . $t_elt['validity'] . '</td>
 					<td><p>' . string_display_links( $t_elt['description'] ) . '</p></td>
@@ -104,11 +112,16 @@ class ContributorsPlugin extends MantisPlugin {
 			);
 
 			foreach( $t_arr as $t_elt ) { 
-				echo '<tr><td>' . user_get_name( $t_elt['user_id'] ) . '
-					<input type="hidden" name="user[]" value="' . $t_elt['user_id'] . '" />
+				$t_uid = $t_elt['user_id'];
+				$t_cents_type = 'hidden';
+				if( $t_uid == $t_current_uid || $t_lvl >= $t_edit_threshold ) {
+					$t_cents_type = 'number'
+				}
+				echo '<tr><td>' . user_get_name( $t_uid ) . '
+					<input type="hidden" name="user[]" value="' . $t_uid . '" />
 				</td>
-				<td class="center" width="20%">
-					<input type="number" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt['cents'] / 100.0) . '" />
+				<td class="center" width="20%"> 
+					<input type="' . $t_cents_type . '" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt['cents'] / 100.0) . '" />
 				</td>
 				<td><input type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" style="" data-form-type="date" /></td>
 				<td><input type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" style="" data-form-type="date" /></td>
