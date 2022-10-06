@@ -5,17 +5,14 @@ require_api( 'date_api.php' );
 
 function contributors_set( $p_bug_id, $p_user_id, $p_row ) {
 	$t_old = contributors_get( $p_bug_id, $p_user_id );
-log_event( LOG_LDAP, "old=" . var_export( $t_old, TRUE ) . 
-	" new=" . var_export( $p_row, TRUE ) .
-	" equal=" . var_export( $t_old == $p_row, TRUE )
-);
+//log_event( LOG_LDAP, "old=" . var_export( $t_old, TRUE ) . " new=" . var_export( $p_row, TRUE ) . " equal=" . var_export( $t_old == $p_row, TRUE ) );
 	if ( $t_old == $p_row ) {
 		return;
 	}
 
 	$t_deadline = date_strtotime( $p_row['deadline'] );
 	$t_validity = date_strtotime( $p_row['validity'] );
-log_event( LOG_LDAP, "deadline=" . $t_deadline . ' validity=' . $t_validity );
+//log_event( LOG_LDAP, "deadline=" . $t_deadline . ' validity=' . $t_validity );
 	$t_history_tbl = plugin_table( 'history' );
 	$t_history_query = 'INSERT INTO ' . $t_history_tbl . ' 
 		( modifier_id, modified_at, bug_id, user_id, 
@@ -65,7 +62,7 @@ function contributors_get( $p_bug_id, $p_user_id ) {
 	};
 	$t_row['validity'] = date_timetostr( $t_row['validity'] );
 	$t_row['deadline'] = date_timetostr( $t_row['deadline'] );
-log_event( LOG_LDAP, "row=" . var_export( $t_row, TRUE ) );
+//log_event( LOG_LDAP, "row=" . var_export( $t_row, TRUE ) );
 	return $t_row;
 }
 
@@ -85,7 +82,7 @@ function contributors_get_array( $p_bug_id ) {
 		}
 		$t_row['validity'] = date_timetostr( $t_row['validity'] );
 		$t_row['deadline'] = date_timetostr( $t_row['deadline'] );
-log_event( LOG_LDAP, "row=" . var_export( $t_row, TRUE ) );
+//log_event( LOG_LDAP, "row=" . var_export( $t_row, TRUE ) );
 		$t_arr[] = $t_row;
 	}
 	return $t_arr;

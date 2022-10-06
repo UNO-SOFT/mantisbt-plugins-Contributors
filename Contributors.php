@@ -26,7 +26,7 @@ class ContributorsPlugin extends MantisPlugin {
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
 		$this->page = '';		   # Default plugin page
 
-		$this->version = '0.4.0';	 # Plugin version string
+		$this->version = '0.5.0';	 # Plugin version string
 		$this->requires = array(	# Plugin dependencies, array of basename => version pairs
 			'MantisCore' => '2.0.0'
 			);
@@ -69,21 +69,20 @@ class ContributorsPlugin extends MantisPlugin {
 	function view_bug_extra($p_event, $p_bug_id) {
 		$t_lvl = access_get_project_level();
 		$t_view_threshold = $this->config_get( 'view_threshold' );
+		$t_edit_all = $t_lvl >= $this->config_get( 'edit_threshold' );
 		if ( $t_lvl < $t_view_threshold ) {
 			return;
 		}
 		$t_page = 'view';
 		$t_current_uid = auth_get_current_user_id();
-		$t_edit = $t_lvl >= $this->config_get( 'edit_threshold' );
 		$t_arr = contributors_get_array( $p_bug_id );
-		if ( $t_edit ) {
-			$t_page = 'edit';
-			echo '
+log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_threshold=" . var_export( $t_view_threshold, TRUE ) . " lvl=" . var_export( $t_lvl, TRUE ) );
+		$t_page = 'edit';
+		echo '
 <div class="form-container">
-	<form id="plugin-contributors-edit" action="' . plugin_page( 'edit' ) . '" method="post">
-		<input type="hidden" name="bug_id" id="bug_id" value="' . $p_bug_id . '" />
+<form id="plugin-contributors-edit" action="' . plugin_page( 'edit' ) . '" method="post">
+	<input type="hidden" name="bug_id" id="bug_id" value="' . $p_bug_id . '" />
 ' . form_security_field( 'plugin_contributors_edit' );
-		}
 		echo '
 		<div class="col-md-12 col-xs-12 noprint">
 			<div id="contributors" class="widget-box widget-color-blue2">
@@ -99,6 +98,7 @@ class ContributorsPlugin extends MantisPlugin {
 						<tbody>
 ';
 
+/*
 		if ( !$t_edit ) { // just view
 			foreach( $t_arr as $t_elt ) {
 				$t_uid = $t_elt['user_id'];
@@ -114,13 +114,16 @@ class ContributorsPlugin extends MantisPlugin {
 					</tr>';
 			}
 		} else {
+*/
 			$t_contributors = contributors_list_users( $this->config_get( 'contributor_threshold' ), $p_bug_id );
 
 			foreach( $t_arr as $t_elt ) { 
 				$t_uid = $t_elt['user_id'];
 				$t_cents_type = 'hidden';
-				if( $t_uid == $t_current_uid || $t_lvl >= $t_edit_threshold ) {
+				$t_readonly = 'readonly';
+				if( $t_edit_all || $t_uid == $t_current_uid ) {
 					$t_cents_type = 'number';
+					$t_readonly = '';
 				}
 				echo '<tr><td>' . user_get_name( $t_uid ) . '
 					<input type="hidden" name="user[]" value="' . $t_uid . '" />
@@ -128,10 +131,25 @@ class ContributorsPlugin extends MantisPlugin {
 				<td class="center" width="20%"> 
 					<input type="' . $t_cents_type . '" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt['cents'] / 100.0) . '" />
 				</td>
-				<td><input type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" style="" data-form-type="date" /></td>
-				<td><input type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" style="" data-form-type="date" /></td>
-				<td><textarea class="input-sm" name="description[]" data-form-type="text">' . string_display( $t_elt['description'] ) . '</textarea></td>
+				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" style="" data-form-type="date" ' . $t_disabled . '/></td>
+				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" style="" data-form-type="date" ' . $t_disabled . '/></td>
+				<td><textarea ' . $t_readonly . ' class="input-sm" name="description[]" data-form-type="text" ' . $t_disabled . '>' . string_display( $t_elt['description'] ) . '</textarea></td>
 				</tr>';
+			}
+			$t_contributors = array_diff( $t_contributors, $t_arr );
+			if( !$t_edit_all ) {
+				$t_found = FALSE;
+				foreach( $t_contributors as $t_contributor ) {
+					if(	$t_contributor == $t_current_uid ) {
+						$t_found = TRUE;
+						break;
+					}
+				}
+				if( $t_found ) {
+					$t_contributors = array( $t_current_uid );
+				} else {
+					$t_contributors = array();
+				}
 			}
 			if( count($t_contributors) > 0 ) {
 				echo '
@@ -139,9 +157,10 @@ class ContributorsPlugin extends MantisPlugin {
 	<td>
 		<select name="new_user" id="new_user">
 ';
-				$t_contributors = array_diff( $t_contributors, $t_arr );
 				foreach( $t_contributors as $t_contributor ) {
-					echo '<option value="' . $t_contributor . '">' . user_get_name( $t_contributor ) . '</option>';
+					if( $t_edit_all || $t_contributor == $t_uid ) {
+						echo '<option value="' . $t_contributor . '">' . user_get_name( $t_contributor ) . '</option>';
+					}
 				}
 				echo '
 		</select>
@@ -153,7 +172,7 @@ class ContributorsPlugin extends MantisPlugin {
 </tr>
 ';
 				}
-		} 
+		//} 
 
 		echo '
 						</tbody>
@@ -161,11 +180,13 @@ class ContributorsPlugin extends MantisPlugin {
 				</div> <!--widget-body-->
 ';
 
+/*
 		if ( !$t_edit ) {
 			echo '
 			</div> <!--widget-box-->
 		</div> <!--noprint-->';
 		} else {
+*/
 			echo '
 				<div class="widget-toolbox padding-8 clearfix">
 					<input type="submit" class="btn btn-primary btn-sm btn-white btn-round" value="' . plugin_lang_get( $t_page ) . '" />
@@ -175,7 +196,7 @@ class ContributorsPlugin extends MantisPlugin {
 	</form>
 </div> <!--form-container-->
 ';
-		}
+		//}
 
 	}
 
