@@ -117,7 +117,9 @@ log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_thresh
 */
 			$t_contributors = contributors_list_users( $this->config_get( 'contributor_threshold' ), $p_bug_id );
 
+			$t_sum = 0;
 			foreach( $t_arr as $t_elt ) { 
+				$t_sum += $t_elt['cents'];
 				$t_uid = $t_elt['user_id'];
 				$t_cents_type = 'hidden';
 				$t_readonly = 'readonly';
@@ -131,8 +133,8 @@ log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_thresh
 				<td class="center" width="20%"> 
 					<input type="' . $t_cents_type . '" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt['cents'] / 100.0) . '" />
 				</td>
-				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" style="" data-form-type="date" ' . $t_disabled . '/></td>
-				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" style="" data-form-type="date" ' . $t_disabled . '/></td>
+				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" data-form-type="date" ' . $t_disabled . '/></td>
+				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" data-form-type="date" ' . $t_disabled . '/></td>
 				<td><textarea ' . $t_readonly . ' class="input-sm" name="description[]" data-form-type="text" ' . $t_disabled . '>' . string_display( $t_elt['description'] ) . '</textarea></td>
 				</tr>';
 			}
@@ -151,6 +153,7 @@ log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_thresh
 					$t_contributors = array();
 				}
 			}
+			echo '<td><td><p>Σ ' . ($t_sum / 100.0) . '</p></td><td/><td/><td/></tr>';
 			if( count($t_contributors) > 0 ) {
 				echo '
 <tr>
@@ -166,8 +169,8 @@ log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_thresh
 		</select>
 	</td>
 	<td><input type="number" name="new_hundred_cents" min="0" max="1000" step="0.1" /></td>
-	<td><input type="date" id="new_deadline" class="datetimepicker input-sm" name="new_deadline" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
-	<td><input type="date" id="new_validity" class="datetimepicker input-sm" name="new_validity" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" style="" data-form-type="date" /></td>
+	<td><input type="date" id="new_deadline" class="datetimepicker input-sm" name="new_deadline" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" data-form-type="date" /></td>
+	<td><input type="date" id="new_validity" class="datetimepicker input-sm" name="new_validity" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="" data-form-type="date" /></td>
 	<td><textarea id="new_description" class="input-sm" name="new_description" data-form-type="text"></textarea></td>
 </tr>
 ';
