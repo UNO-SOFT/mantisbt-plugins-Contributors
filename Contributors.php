@@ -76,7 +76,7 @@ class ContributorsPlugin extends MantisPlugin {
 		$t_page = 'view';
 		$t_current_uid = auth_get_current_user_id();
 		$t_arr = contributors_get_array( $p_bug_id );
-log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_threshold=" . var_export( $t_view_threshold, TRUE ) . " lvl=" . var_export( $t_lvl, TRUE ) );
+//log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_threshold=" . var_export( $t_view_threshold, TRUE ) . " lvl=" . var_export( $t_lvl, TRUE ) );
 		$t_page = 'edit';
 		echo '
 <div class="form-container">
@@ -116,11 +116,14 @@ log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_thresh
 		} else {
 */
 			$t_contributors = contributors_list_users( $this->config_get( 'contributor_threshold' ), $p_bug_id );
+//log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . "=" .  user_get_name( $t_current_uid ) . " contributors=" . var_export( $t_contributors, TRUE ) );
 
+			$t_seen = array();
 			$t_sum = 0;
 			foreach( $t_arr as $t_elt ) { 
 				$t_sum += $t_elt['cents'];
 				$t_uid = $t_elt['user_id'];
+				$t_seen[] = $t_uid;
 				$t_cents_type = 'hidden';
 				$t_readonly = 'readonly';
 				if( $t_edit_all || $t_uid == $t_current_uid ) {
@@ -138,21 +141,24 @@ log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_thresh
 				<td><textarea ' . $t_readonly . ' class="input-sm" name="description[]" data-form-type="text" ' . $t_disabled . '>' . string_display( $t_elt['description'] ) . '</textarea></td>
 				</tr>';
 			}
-			$t_contributors = array_diff( $t_contributors, $t_arr );
+			$t_contributors = array_diff( $t_contributors, $t_seen );
+//log_event( LOG_LDAP, "seen=" . var_export( $t_seen, TRUE ) . " contributors=" . var_export( $t_contributors, TRUE ) );
 			if( !$t_edit_all ) {
 				$t_found = FALSE;
 				foreach( $t_contributors as $t_contributor ) {
-					if(	$t_contributor == $t_current_uid ) {
+					if( $t_contributor == $t_current_uid ) {
 						$t_found = TRUE;
 						break;
 					}
 				}
+//log_event( LOG_LDAP, "found=" . var_export( $t_found, TRUE ) . " current_uid=$t_current_uid contributors=" . var_export( $t_contributors, TRUE ) );
 				if( $t_found ) {
 					$t_contributors = array( $t_current_uid );
 				} else {
 					$t_contributors = array();
 				}
 			}
+//log_event( LOG_LDAP, " current_uid=$t_current_uid count=" . count($t_contributors) . " contributors=" . var_export( $t_contributors, TRUE ) );
 			echo '<td><td><p>Σ ' . ($t_sum / 100.0) . '</p></td><td/><td/><td/></tr>';
 			if( count($t_contributors) > 0 ) {
 				echo '
@@ -161,7 +167,7 @@ log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_thresh
 		<select name="new_user" id="new_user">
 ';
 				foreach( $t_contributors as $t_contributor ) {
-					if( $t_edit_all || $t_contributor == $t_uid ) {
+					if( $t_edit_all || $t_contributor == $t_current_uid ) {
 						echo '<option value="' . $t_contributor . '">' . user_get_name( $t_contributor ) . '</option>';
 					}
 				}
