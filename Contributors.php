@@ -159,7 +159,9 @@ class ContributorsPlugin extends MantisPlugin {
 				}
 			}
 //log_event( LOG_LDAP, " current_uid=$t_current_uid count=" . count($t_contributors) . " contributors=" . var_export( $t_contributors, TRUE ) );
-			echo '<td><td><p>Σ ' . ($t_sum / 100.0) . '</p></td><td/><td/><td/></tr>';
+			if( $t_edit_all ) {
+				echo '<td><td><p>Σ ' . ($t_sum / 100.0) . '</p></td><td/><td/><td/></tr>';
+			}
 			if( count($t_contributors) > 0 ) {
 				echo '
 <tr>
