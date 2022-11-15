@@ -25,31 +25,19 @@ function contributors_set( $p_bug_id, $p_user_id, $p_row ) {
 	) );
 
 	$t_tbl = plugin_table( 'current' );
+	$t_query = 'DELETE FROM ' . $t_tbl . ' WHERE bug_id = ' . db_param() . ' AND user_id = ' . db_param();
+	db_query( $t_query, array( $p_bug_id, $p_user_id ) );
 	if ( $p_row['cents'] == 0 ) {
-		$t_query = 'DELETE FROM ' . $t_tbl . ' WHERE bug_id = ' . db_param() . ' AND user_id = ' . db_param();
-		db_query( $t_query, array( $p_bug_id, $p_user_id ) );
 		return;
 	}
 
-	$t_query = 'UPDATE ' . $t_tbl . 
-		' SET cents = ' . db_param() . 
-		', deadline = ' . db_param() . ', validity = ' . db_param() . ', description = ' . db_param() .
-		' WHERE bug_id = ' . db_param() . ' AND user_id = ' . db_param();
-	db_query( $t_query, array( 
-		$p_row['cents'], 
-		$t_deadline, $t_validity, $p_row['description'], 
-		$p_bug_id, $p_user_id
-	) );
-
-	if ( db_affected_rows() == 0 ) {
-		$t_query = 'INSERT INTO ' . $t_tbl . ' 
-			( bug_id, user_id, cents, deadline, validity, description )
-			VALUES ( ' . db_param() . ',' . db_param() . ',' . db_param() .  ',' . 
-						db_param() .  ',' . db_param() . ',' . db_param() . ')';
-		db_query( $t_query, array( 
-			$p_bug_id, $p_user_id, $p_row['cents'], $t_deadline, $t_validity, $p_row['description'] 
-		) );
-	}
+	$t_query = 'INSERT INTO ' . $t_tbl . ' 
+        ( bug_id, user_id, cents, deadline, validity, description )
+        VALUES ( ' . db_param() . ',' . db_param() . ',' . db_param() .  ',' . 
+        db_param() .  ',' . db_param() . ',' . db_param() . ')';
+    db_query( $t_query, array( 
+        $p_bug_id, $p_user_id, $p_row['cents'], $t_deadline, $t_validity, $p_row['description'] 
+    ) );
 }
 
 function contributors_get( $p_bug_id, $p_user_id ) {
