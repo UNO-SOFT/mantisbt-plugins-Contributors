@@ -55,8 +55,10 @@ function contributors_get( $p_bug_id, $p_user_id ) {
 }
 
 function contributors_get_array( $p_bug_id ) {
-	$t_query = 'SELECT user_id, cents, deadline, validity, description FROM ' . plugin_table( 'current' ) . 
-		' WHERE bug_id = ' . db_param();
+	$t_query = 'SELECT A.user_id, A.cents, A.deadline, A.validity, A.description, B.username ' .
+		' FROM {user} B, ' . plugin_table( 'current' ) . ' A' .
+		' WHERE B.id = A.user_id AND A.bug_id = ' . db_param() . 
+		' ORDER BY B.username';
 	$t_result = db_query( $t_query, array( $p_bug_id ) );
 
 	$t_arr = array();

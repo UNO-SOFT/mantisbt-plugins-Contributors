@@ -247,6 +247,7 @@ class ContributorsPlugin extends MantisPlugin {
 				validity		I UNSIGNED",
 				$opts)
 			),
+            // alter table mantis_plugin_contributors_current_table add primary key (bug_id,user_id) initially deferred;
 		);
 	}
 }
