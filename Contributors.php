@@ -37,7 +37,7 @@ class ContributorsPlugin extends MantisPlugin {
 		
 		$this->cfg = array(
 			'view_threshold' => plugin_config_get( 'view_threshold', UPDATER ),
-			'edit_threshold' => plugin_config_get( 'edit_threshold', MANAGER ),
+			'edit_all_threshold' => plugin_config_get( 'edit_all_threshold', ADMINISTRATOR ),
 			'contributor_threshold' => plugin_config_get( 'contributor_threshold', UPDATER ),
 		);
 	}
@@ -66,10 +66,11 @@ class ContributorsPlugin extends MantisPlugin {
 		return array( '<a class="btn btn-primary btn-sm btn-white btn-round" href="#contributors">'
 			. plugin_lang_get('view') . '</a>', );
 	}
+
 	function view_bug_extra($p_event, $p_bug_id) {
 		$t_lvl = access_get_project_level();
 		$t_view_threshold = $this->config_get( 'view_threshold' );
-		$t_edit_all = $t_lvl >= $this->config_get( 'edit_threshold' );
+		$t_edit_all = $t_lvl >= $this->config_get( 'edit_all_threshold' );
 		if ( $t_lvl < $t_view_threshold ) {
 			return;
 		}
