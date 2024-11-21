@@ -137,9 +137,9 @@ class ContributorsPlugin extends MantisPlugin {
 				<td class="center" width="20%"> 
 					<input type="' . $t_cents_type . '" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt['cents'] / 100.0) . '" />
 				</td>
-				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" data-form-type="date" ' . $t_disabled . '/></td>
-				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" data-form-type="date" ' . $t_disabled . '/></td>
-				<td><textarea ' . $t_readonly . ' class="input-sm" name="description[]" data-form-type="text" ' . $t_disabled . '>' . string_display( $t_elt['description'] ) . '</textarea></td>
+				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" data-form-type="date" /></td>
+				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="validity[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['validity'] . '" data-form-type="date" /></td>
+				<td><textarea ' . $t_readonly . ' class="input-sm" name="description[]" data-form-type="text" >' . string_display( $t_elt['description'] ) . '</textarea></td>
 				</tr>';
 			}
 			$t_contributors = array_diff( $t_contributors, $t_seen );
