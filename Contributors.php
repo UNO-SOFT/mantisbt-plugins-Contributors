@@ -166,7 +166,7 @@ class ContributorsPlugin extends MantisPlugin {
 				$t_seen[] = $t_uid;
 				$t_cents_type = 'hidden';
 				$t_readonly = 'readonly';
-				if( $t_edit_all || $t_uid == $t_current_uid ) {
+				if( $t_edit_all || $t_may_edit && $t_uid == $t_current_uid ) {
 					$t_cents_type = 'number';
 					$t_readonly = '';
 				}
