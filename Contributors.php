@@ -20,13 +20,14 @@ test_string_mul_100();
 
 class ContributorsPlugin extends MantisPlugin {
 	private $cfg = null;
+	private $edit_all_uids = array( );
 
 	function register() {
 		$this->name = 'Contributors';	# Proper name of plugin
 		$this->description = 'Manage contributors per issue';	# Short description of the plugin
 		$this->page = '';		   # Default plugin page
 
-		$this->version = '0.5.0';	 # Plugin version string
+		$this->version = '0.5.1';	 # Plugin version string
 		$this->requires = array(	# Plugin dependencies, array of basename => version pairs
 			'MantisCore' => '2.0.0'
 			);
@@ -34,11 +35,12 @@ class ContributorsPlugin extends MantisPlugin {
 		$this->author = 'Tamás Gulácsi';		 # Author/team name
 		$this->contact = 'T.Gulacsi@unosoft.hu';		# Author/team e-mail address
 		$this->url = 'http://www.unosoft.hu';			# Support webpage
-		
+
 		$this->cfg = array(
 			'view_threshold' => plugin_config_get( 'view_threshold', UPDATER ),
 			'edit_all_threshold' => plugin_config_get( 'edit_all_threshold', ADMINISTRATOR ),
 			'contributor_threshold' => plugin_config_get( 'contributor_threshold', UPDATER ),
+			'edit_all_users' => plugin_config_get( 'edit_all_users', 'akoshuszti,tgulacsi,zbatta' );
 		);
 	}
 
@@ -67,15 +69,39 @@ class ContributorsPlugin extends MantisPlugin {
 			. plugin_lang_get('view') . '</a>', );
 	}
 
+	function edit_all( $p_user = null ) {
+	  if( ! $this->edit_all_uids ) {
+	    $t_usernames = preg_split( "/[,\s]+/",
+  	      $this->config_get( 'edit_all_users' ) );
+	    foreach( $p_usernames as $t_username ) {
+        $this->edit_all_uids[ user_get_id_by_name( $t_username ) ] = $t_username;
+      }
+      if( ! $this->edit_all_uids ||
+          count( $this-> edit_all_uids ) != count( $t_usernames )
+      ) {
+        log_event( LOG_LDAP, "edit_all_users=" . var_export( $this->config_get( 'edit_all_users' ) . " = " . var_export( $t_usernames, TRUE ), TRUE )  );
+      }
+      if( ! $this->edit_all_uids ) {
+        $this->edit_all_uids[-1] = '';
+      }
+    }
+
+	  if( !$p_user ) {
+  		$p_user = auth_get_current_user_id();
+	  }
+    return array_key_exists( $p_user, $this->edit_all_uids );
+	}
+
 	function view_bug_extra($p_event, $p_bug_id) {
 		$t_lvl = access_get_project_level();
 		$t_view_threshold = $this->config_get( 'view_threshold' );
-		$t_edit_all = $t_lvl >= $this->config_get( 'edit_all_threshold' );
 		if ( $t_lvl < $t_view_threshold ) {
 			return;
 		}
-		$t_page = 'view';
 		$t_current_uid = auth_get_current_user_id();
+		$t_edit_all = $this->edit_all( $t_current_uid );
+
+		$t_page = 'view';
 		$t_arr = contributors_get_array( $p_bug_id );
 //log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_threshold=" . var_export( $t_view_threshold, TRUE ) . " lvl=" . var_export( $t_lvl, TRUE ) );
 		$t_page = 'edit';
@@ -121,7 +147,7 @@ class ContributorsPlugin extends MantisPlugin {
 
 			$t_seen = array();
 			$t_sum = 0;
-			foreach( $t_arr as $t_elt ) { 
+			foreach( $t_arr as $t_elt ) {
 				$t_sum += $t_elt['cents'];
 				$t_uid = $t_elt['user_id'];
 				$t_seen[] = $t_uid;
@@ -134,7 +160,7 @@ class ContributorsPlugin extends MantisPlugin {
 				echo '<tr><td>' . user_get_name( $t_uid ) . '
 					<input type="hidden" name="user[]" value="' . $t_uid . '" />
 				</td>
-				<td class="center" width="20%"> 
+				<td class="center" width="20%">
 					<input type="' . $t_cents_type . '" class="ace" name="hundred_cents[]" min="0" max="1000" step="0.1" value="' . ($t_elt['cents'] / 100.0) . '" />
 				</td>
 				<td><input ' . $t_readonly . ' type="date" class="datetimepicker input-sm" name="deadline[]" data-picker-locale="hu" data-picker-format="Y-MM-DD HH:mm" maxlength="16" value="' . $t_elt['deadline'] . '" data-form-type="date" /></td>
@@ -184,7 +210,7 @@ class ContributorsPlugin extends MantisPlugin {
 </tr>
 ';
 				}
-		//} 
+		//}
 
 		echo '
 						</tbody>
