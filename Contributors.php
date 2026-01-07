@@ -40,7 +40,7 @@ class ContributorsPlugin extends MantisPlugin {
 			'view_threshold' => plugin_config_get( 'view_threshold', UPDATER ),
 			'edit_all_threshold' => plugin_config_get( 'edit_all_threshold', ADMINISTRATOR ),
 			'contributor_threshold' => plugin_config_get( 'contributor_threshold', UPDATER ),
-			'edit_all_users' => plugin_config_get( 'edit_all_users', 'akoshuszti,tgulacsi,zbatta' );
+			'edit_all_users' => plugin_config_get( 'edit_all_users', 'akoshuszti,tgulacsi,zbatta' ),
 		);
 	}
 
@@ -92,7 +92,7 @@ class ContributorsPlugin extends MantisPlugin {
     return array_key_exists( $p_user, $this->edit_all_uids );
 	}
 
-	function view_bug_extra($p_event, $p_bug_id) {
+	function view_bug_extra( $p_event, $p_bug_id ) {
 		$t_lvl = access_get_project_level();
 		$t_view_threshold = $this->config_get( 'view_threshold' );
 		if ( $t_lvl < $t_view_threshold ) {
@@ -104,6 +104,19 @@ class ContributorsPlugin extends MantisPlugin {
 		$t_page = 'view';
 		$t_arr = contributors_get_array( $p_bug_id );
 //log_event( LOG_LDAP, "uid=" . var_export( $t_current_uid, TRUE ) . " view_threshold=" . var_export( $t_view_threshold, TRUE ) . " lvl=" . var_export( $t_lvl, TRUE ) );
+    $t_may_edit = $t_edit_all;
+    if( !$t_may_edit ) {
+        $t_projection = bug_get_field( $p_bug_id, 'projection' );
+        $t_may_edit = $_projection > 51 || $t_projection == 50 &&
+          bug_get_field( $p_bug_id, 'status' ) < 30;
+	}
+        if( !$t_may_edit ) {
+		  $t_msg = "MAY_EDIT: projection=" . var_export( $t_projection, TRUE ) . 
+		    " status=" . var_export( bug_get_field( $p_bug_id, 'status' ) );
+		  echo "\n<!--" . $t_msg . "-->\n";
+		  log_event( LOG_LDAP, $t_msg );
+		}
+
 		$t_page = 'edit';
 		echo '
 <div class="form-container">
@@ -126,7 +139,7 @@ class ContributorsPlugin extends MantisPlugin {
 ';
 
 /*
-		if ( !$t_edit ) { // just view
+		if ( !$t_may_edit ) { // just view
 			foreach( $t_arr as $t_elt ) {
 				$t_uid = $t_elt['user_id'];
 				$t_cents = '*';
@@ -219,7 +232,7 @@ class ContributorsPlugin extends MantisPlugin {
 ';
 
 /*
-		if ( !$t_edit ) {
+		if ( !$t_may_edit ) {
 			echo '
 			</div> <!--widget-box-->
 		</div> <!--noprint-->';
